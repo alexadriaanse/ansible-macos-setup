@@ -1,0 +1,34 @@
+---
+- name: Safety checks (local role validation)
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Ensure playbook is running locally
+      fail:
+        msg: "This playbook must be run locally on the laptop."
+      when: ansible_connection != "local"
+
+    - name: Ensure exactly one laptop role is defined
+      fail:
+        msg: >
+          Exactly one role must be defined in inventory.local.
+          Choose either admin_laptop OR family_laptop.
+      when: >
+        (
+          ('admin_laptop' in groups and 'localhost' in groups['admin_laptop']) |
+          bool
+        ) ==
+        (
+          ('family_laptop' in groups and 'localhost' in groups['family_laptop']) |
+          bool
+        )
+
+- name: Admin laptop
+  hosts: admin_laptop
+  roles:
+    - common
+
+- name: Family laptop
+  hosts: family_laptop
+  roles:
+    - common

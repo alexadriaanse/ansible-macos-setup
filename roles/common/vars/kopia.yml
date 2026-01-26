@@ -1,0 +1,47 @@
+---
+kopia_cli: '/Applications/KopiaUI.app/Contents/Resources/server/kopia'
+
+kopia_ignore:
+  - /Applications
+  - /bin
+  - /cores
+  - /dev
+  - /etc
+  - /home
+  - /Library
+  - /opt
+  - /private
+  - /sbin
+  - /System
+  - /tmp
+  - /usr
+  - /Volumes
+  - ~/Library/Caches
+  - ~/.Trash
+  - '*.iso'
+  - '*.dmg'
+  - '*.sparseimage'
+  - '*.mem'
+  - '*.nvram'
+  - '*.pkg'
+
+kopia_never_compress_extensions:
+  - 7z
+  - bz2
+  - deb
+  - gif
+  - gz
+  - heic
+  - jar
+  - jpeg
+  - jpg
+  - m4a
+  - mov
+  - mp3
+  - mp4
+  - mpeg
+  - mpg
+  - png
+  - tgz
+  - xz
+  - zip

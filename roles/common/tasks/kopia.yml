@@ -1,0 +1,99 @@
+---
+- name: Load Kopia vars
+  ansible.builtin.include_vars:
+    file: kopia.yml
+
+- name: Load Kopia local vars
+  ansible.builtin.include_vars:
+    file: kopia.local.yml
+
+- name: Check whether we need to connect the Kopia repo
+  ansible.builtin.command:
+    argv:
+      - "{{ kopia_cli }}"
+      - repo
+      - status
+  register: kopia_repo_status
+  ignore_errors: true
+  failed_when: false
+
+- name: Get B2 credentials from 1Password
+  ansible.builtin.set_fact:
+    b2_bucket_info: "{{ lookup('community.general.onepassword_raw', kopia_b2_1p_item) }}"
+    cacheable: false
+  when: kopia_repo_status.rc != 0
+
+- name: Connect Kopia to repo
+  environment:
+    AWS_ACCESS_KEY_ID: "{{ b2_bucket_info.fields | selectattr('label', 'equalto', 'access key id') | map(attribute='value') | first }}"
+    AWS_SECRET_ACCESS_KEY: "{{ b2_bucket_info.fields | selectattr('label', 'equalto', 'secret access key') | map(attribute='value') | first }}"
+    KOPIA_PASSWORD: "{{ lookup('community.general.onepassword', kopia_password_1p_item, field='password') }}"
+  ansible.builtin.command:
+    argv:
+      - "{{ kopia_cli }}"
+      - repository
+      - connect # Temporarily change to 'create' if creating a repo for the first time
+      - s3
+      - "--endpoint={{ b2_bucket_info.fields | selectattr('label', 'equalto', 'server endpoint') | map(attribute='value') | first }}"
+      - "--bucket={{ b2_bucket_info.fields | selectattr('label', 'equalto', 'bucket') | map(attribute='value') | first }}"
+  when: kopia_repo_status.rc != 0
+  no_log: true
+
+- name: Set Kopia repo parameters
+  ansible.builtin.command:
+    argv:
+      - "{{ kopia_cli }}"
+      - repository
+      - set-parameters
+      - --retention-mode=COMPLIANCE
+      - --retention-period=30d
+  when: kopia_repo_status.rc != 0
+
+- name: Clear Kopia policy
+  ansible.builtin.command:
+    argv:
+      - "{{ kopia_cli }}"
+      - policy
+      - set
+      - --global
+      - --clear-ignore
+      - --clear-never-compress
+
+- name: Set Kopia policy
+  ansible.builtin.command:
+    argv: "{{ [
+        kopia_cli,
+        'policy',
+        'set',
+        '--global',
+        '--compression=zstd',
+      ]
+      + (kopia_ignore | map('regex_replace', '^(.*)$', '--add-ignore=\\1'))
+      + (kopia_never_compress_extensions | map('regex_replace', '^(.*)$', '--add-never-compress=.\\1'))
+      + (kopia_never_compress_extensions | map('upper') | map('regex_replace', '^(.*)$', '--add-never-compress=.\\1'))
+    }}"
+
+- name: Create stdout log file
+  ansible.builtin.file:
+    path: "{{ ansible_facts['user_dir'] }}/Library/Logs/kopia/snapshot.log"
+    state: touch
+    mode: '0600'
+
+- name: Create stderr log file
+  ansible.builtin.file:
+    path: "{{ ansible_facts['user_dir'] }}/Library/Logs/kopia/snapshot.err"
+    state: touch
+    mode: '0600'
+
+- name: Ensure Kopia launch agent exists
+  ansible.builtin.template:
+    src: io.kopia.snapshot.plist.j2
+    dest: "{{ ansible_facts['user_dir'] }}/Library/LaunchAgents/io.kopia.snapshot.plist"
+  notify: Reload Kopia launchd
+
+- name: Ensure Kopia Launchd agent is enabled and started
+  community.general.launchd:
+    name: io.kopia.snapshot
+    state: started
+    enabled: yes
+  become: no

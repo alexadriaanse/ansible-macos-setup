@@ -1,0 +1,2 @@
+- name: Reload Kopia launchd
+  ansible.builtin.command: launchctl load -w /Library/LaunchDaemons/io.kopia.snapshot.plist

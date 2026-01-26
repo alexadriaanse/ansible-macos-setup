@@ -1,0 +1,22 @@
+---
+- name: Ensure Homebrew is installed
+  ansible.builtin.stat:
+    path: /opt/homebrew/bin/brew
+  register: brew_check
+
+- name: Fail if Homebrew is not installed
+  ansible.builtin.fail:
+    msg: "Homebrew must be installed."
+  when: not brew_check.stat.exists
+
+- name: Update Homebrew
+  community.general.homebrew:
+    update_homebrew: yes
+
+- name: Install Homebrew packages
+  community.general.homebrew:
+    name: "{{ homebrew_packages }}"
+    state: present
+
+- name: Configure Kopia
+  ansible.builtin.include_tasks: kopia.yml

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>io.kopia.snapshot</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>{{ kopia_cli }}</string>
+        <string>--config-file={{ ansible_facts['user_dir'] }}/Library/Application Support/kopia/repository.config</string>
+        <string>snapshot</string>
+        <string>create</string>
+        <string>--no-progress</string>
+        <string>/</string>
+    </array>
+    <key>UserName</key>
+    <string>root</string>
+    <key>StandardOutPath</key>
+    <string>{{ ansible_facts['user_dir'] }}/Library/Logs/kopia/snapshot.log</string>
+    <key>StandardErrorPath</key>
+    <string>{{ ansible_facts['user_dir'] }}/Library/Logs/kopia/snapshot.err</string>
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>2</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+    <key>RunAtLoad</key>
+    <false/>
+</dict>
+</plist>
