@@ -16,6 +16,7 @@
   register: kopia_repo_status
   ignore_errors: true
   failed_when: false
+  changed_when: false
 
 - name: Get B2 credentials from 1Password
   ansible.builtin.set_fact:
@@ -32,7 +33,7 @@
     argv:
       - "{{ kopia_cli }}"
       - repository
-      - connect # Temporarily change to 'create' if creating a repo for the first time
+      - "{{ kopia_repo_action }}"
       - s3
       - "--endpoint={{ b2_bucket_info.fields | selectattr('label', 'equalto', 'server endpoint') | map(attribute='value') | first }}"
       - "--bucket={{ b2_bucket_info.fields | selectattr('label', 'equalto', 'bucket') | map(attribute='value') | first }}"
@@ -74,15 +75,17 @@
     }}"
 
 - name: Create stdout log file
-  ansible.builtin.file:
-    path: "{{ ansible_facts['user_dir'] }}/Library/Logs/kopia/snapshot.log"
-    state: touch
+  ansible.builtin.copy:
+    content: ""
+    dest: "{{ ansible_facts['user_dir'] }}/Library/Logs/kopia/snapshot.log"
+    force: no
     mode: '0600'
 
 - name: Create stderr log file
-  ansible.builtin.file:
-    path: "{{ ansible_facts['user_dir'] }}/Library/Logs/kopia/snapshot.err"
-    state: touch
+  ansible.builtin.copy:
+    content: ""
+    dest: "{{ ansible_facts['user_dir'] }}/Library/Logs/kopia/snapshot.err"
+    force: no
     mode: '0600'
 
 - name: Ensure Kopia launch agent exists

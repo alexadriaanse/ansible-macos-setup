@@ -1,5 +1,6 @@
 ---
 kopia_cli: '/Applications/KopiaUI.app/Contents/Resources/server/kopia'
+kopia_repo_action: connect
 
 kopia_ignore:
   - /Applications

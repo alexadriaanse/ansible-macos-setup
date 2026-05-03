@@ -50,6 +50,9 @@ if ! command -v ansible >/dev/null; then
   brew install ansible
 fi
 
+echo "📦 Installing Ansible collections"
+ansible-galaxy collection install -r "$SCRIPT_DIR/requirements.yml"
+
 echo
 echo "🔐 Make sure 1Password is installed, and Settings > Developer > Integrate with 1Password CLI is enabled"
 read -p "Press Enter to continue..."

@@ -1,4 +1,4 @@
 ---
-homebrew_packages:
+homebrew_casks:
   - 1password-cli
   - kopiaui

@@ -1,21 +1,24 @@
 ---
-- name: Ensure Homebrew is installed
+- name: Check Homebrew binary locations
   ansible.builtin.stat:
-    path: /opt/homebrew/bin/brew
-  register: brew_check
+    path: "{{ item }}"
+  loop:
+    - /opt/homebrew/bin/brew
+    - /usr/local/bin/brew
+  register: brew_checks
 
 - name: Fail if Homebrew is not installed
   ansible.builtin.fail:
     msg: "Homebrew must be installed."
-  when: not brew_check.stat.exists
+  when: brew_checks.results | selectattr('stat.exists') | list | length == 0
 
 - name: Update Homebrew
   community.general.homebrew:
     update_homebrew: yes
 
-- name: Install Homebrew packages
-  community.general.homebrew:
-    name: "{{ homebrew_packages }}"
+- name: Install Homebrew casks
+  community.general.homebrew_cask:
+    name: "{{ homebrew_casks }}"
     state: present
 
 - name: Configure Kopia
