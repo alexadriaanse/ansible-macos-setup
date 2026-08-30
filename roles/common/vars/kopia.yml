@@ -18,6 +18,7 @@ kopia_ignore:
   - /usr
   - /Volumes
   - ~/Library/Caches
+  - ~/Library/Containers/com.docker.docker
   - ~/.Trash
   - '*.iso'
   - '*.dmg'
