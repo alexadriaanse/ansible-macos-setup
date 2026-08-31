@@ -17,9 +17,9 @@ kopia_ignore:
   - /tmp
   - /usr
   - /Volumes
-  - ~/Library/Caches
-  - ~/Library/Containers/com.docker.docker
-  - ~/.Trash
+  - "{{ ansible_facts['user_dir'] }}/Library/Caches"
+  - "{{ ansible_facts['user_dir'] }}/Library/Containers/com.docker.docker"
+  - "{{ ansible_facts['user_dir'] }}/.Trash"
   - '*.iso'
   - '*.dmg'
   - '*.sparseimage'
